@@ -10,19 +10,24 @@
                 
         <script type="text/javascript">
 
-            var totalTime = 5000; //miliseconds
+            var totalTime = 600000; //miliseconds set to 10 min
             var totalWords = 500;
-            var WPMGoal; //words per second
+            var WPMGoal; //words per minute Goal
+            var WPSGoal; //words per second Goal
+            var WPS;
             var wordsWritten = 0;
             var WPM; //words per second 
             var timePassed = 0; //seconds
             var t;
             var WPMActual; //percent of goal as decimal
+            var WPSActual; //percent og goal as decimal
             var visible = true;
+            var WSFOn;
 
             function startWriting(){
                 document.getElementById("timer").disabled = true;
                 document.getElementById("words").disabled = true;
+                WSFOn = true;
                 t = setInterval(writing, 1000);
             }
 
@@ -45,33 +50,41 @@
                 console.log("time passed: ", timePassed);
                 console.log("totalTime: ", totalTime);
                 if(timePassed == totalTime/1000){
-                    document.getElementById("text").disabled = true;
                     clearInterval(t);
                     displayWPM();
+                    WSFOn = false;
                 }
             }
 
             function displayWPM(){
-                WPMpercent = WPMActual*10000;
-                message = 'you reached '+WPMpercent+' % of your goal.';
+                WPMpercent = WPMActual*100;
+                message = 'You reached '+WPMpercent+' % of your goal with '+wordsWritten+' words.';
                 M.toast({html: message, displayLength: 100000});
             }
 
             function updateWPM(){
                
-                WPMGoal = totalWords/(totalTime/60000);
-                WPM = wordsWritten/(timePassed/60);
+                WPMGoal = totalWords/(totalTime/60000); //50 words a minute
+                WPSGoal = WPMGoal/60;                   //1.2 words a second
+                WPM = wordsWritten/(timePassed/60);     //40 words a minute
+                WPS = wordsWritten/timePassed;          //20 words per 10 seconds => 2 words a second
+                WPSActual = WPS / WPSGoal;              //2 divided by 1.2 => 160 %
                 WPMActual = WPM / WPMGoal;
-                if (WPMActual >= 0.9){
+
+                console.log("WPS: ", WPSActual);
+
+                if (WPSActual >= 0.9){
                     color = "green";
                 }
-                else if (WPMActual < 0.9 && WPMActual >= 0.75){
+                else if (WPSActual < 0.9 && WPSActual >= 0.75){
                     color = "orange"
                 }
                 else{
                     color = "red"
                 }
+
                 console.log(color);
+                document.getElementById("WSF").style.color = color;
             }
 
             function changeTime(timercount){
@@ -92,9 +105,11 @@
             }
 
             function inputChanged(val){
-                var v = count_word(val);
-                wordsWritten = v.words;
-                document.getElementById("WSF").innerHTML = wordsWritten;
+                if(WSFOn){
+                    var v = count_word(val);
+                    wordsWritten = v.words;
+                    document.getElementById("WSF").innerHTML = wordsWritten;
+                }
             };
 
             function toggleTime(){
