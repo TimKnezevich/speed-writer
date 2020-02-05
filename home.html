@@ -9,30 +9,69 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
                 
         <script type="text/javascript">
-            M.AutoInit();
 
-            var totalTime = 600000;
+            var totalTime = 5000; //miliseconds
             var totalWords = 500;
-            var WPMGoal = totalWords/(totalTime/60000);
+            var WPMGoal; //words per second
             var wordsWritten = 0;
-            var WPM = wordsWritten/(totalTime/60000);
-            var timePassed = 0;
+            var WPM; //words per second 
+            var timePassed = 0; //seconds
+            var t;
+            var WPMActual; //percent of goal as decimal
+            var visible = true;
 
             function startWriting(){
                 document.getElementById("timer").disabled = true;
                 document.getElementById("words").disabled = true;
+                t = setInterval(writing, 1000);
+            }
+
+            function endWriting(){
+                document.getElementById("timer").disabled = false;
+                document.getElementById("words").disabled = false;
+                clearInterval(t);
                 timePassed = 0;
-                var t = setInterval(writing, 1000);
+                document.getElementById("TSF").innerHTML = timePassed;
+                document.getElementById("WSF").style.color = "black";
+                wordsWritten = 0;
+                document.getElementById("WSF").innerHTML = wordsWritten;
+                document.getElementById("text").value = "";
             }
 
             function writing(){
                 timePassed++;
-                //wpm display
+                updateWPM();
                 document.getElementById("TSF").innerHTML = timePassed;
-                if(timePassed == totalTime){
+                console.log("time passed: ", timePassed);
+                console.log("totalTime: ", totalTime);
+                if(timePassed == totalTime/1000){
                     document.getElementById("text").disabled = true;
                     clearInterval(t);
+                    displayWPM();
                 }
+            }
+
+            function displayWPM(){
+                WPMpercent = WPMActual*10000;
+                message = 'you reached '+WPMpercent+' % of your goal.';
+                M.toast({html: message, displayLength: 100000});
+            }
+
+            function updateWPM(){
+               
+                WPMGoal = totalWords/(totalTime/60000);
+                WPM = wordsWritten/(timePassed/60);
+                WPMActual = WPM / WPMGoal;
+                if (WPMActual >= 0.9){
+                    color = "green";
+                }
+                else if (WPMActual < 0.9 && WPMActual >= 0.75){
+                    color = "orange"
+                }
+                else{
+                    color = "red"
+                }
+                console.log(color);
             }
 
             function changeTime(timercount){
@@ -58,6 +97,19 @@
                 document.getElementById("WSF").innerHTML = wordsWritten;
             };
 
+            function toggleTime(){
+
+                if (visible){
+                    document.getElementById("timeSpan").style.visibility = "hidden";
+                    visible = false;
+                }
+                else{
+                    document.getElementById("timeSpan").style.visibility = "visible";
+                    visible = true;
+                }
+            }
+
+            M.AutoInit();
         </script>
 
     </head>
@@ -91,7 +143,7 @@
                 <div class="col s6">
                     <h5 style="text-align: center;" id="WPM"><span id="wordcount">500</span> words in <span id="time">10</span> minutes</h5>
                     <h5 style="text-align: center;">Words so far: <span id="WSF">0</span></h5>
-                    <h6 style="text-align: center;">Time: <span id="TSF">0</span></h6>
+                    <h6 style="text-align: center;"><span><a class="waves-effect waves-light btn-small" onclick="toggleTime()">Toggle</a></span> <span id="timeSpan">Time: <span id="TSF">0</span></span></h6>
                 </div>
 
             </div>
@@ -104,7 +156,7 @@
 
             <div class="row">
                 <div class="input-field">
-                <textarea id="text" class="materialize-textarea" onfocus="startWriting()" oninput="inputChanged(this.value)"></textarea>
+                <textarea id="text" class="materialize-textarea" onBlur="endWriting()" onfocus="startWriting()" oninput="inputChanged(this.value)"></textarea>
                 <label for="text">Write</label>
                 </div>
             </div>
