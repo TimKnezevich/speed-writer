@@ -17,16 +17,15 @@
             var wordsWritten = 0;
             var WPM = wordsWritten/(totalTime/60000);
             var timePassed = 0;
-            var t;
 
             function startWriting(){
                 document.getElementById("timer").disabled = true;
                 document.getElementById("words").disabled = true;
-                t = setInterval(writing, 1000);
+                timePassed = 0;
+                var t = setInterval(writing, 1000);
             }
 
             function writing(){
-                console.log(timePassed);
                 timePassed++;
                 //wpm display
                 document.getElementById("TSF").innerHTML = timePassed;
@@ -53,11 +52,11 @@
                 }
             }
 
-            document.getElementById("text").addEventListener("input", function(){
-                var v = count_word( this.value );
+            function inputChanged(val){
+                var v = count_word(val);
                 wordsWritten = v.words;
                 document.getElementById("WSF").innerHTML = wordsWritten;
-            }, false);
+            };
 
         </script>
 
@@ -105,7 +104,7 @@
 
             <div class="row">
                 <div class="input-field">
-                <textarea id="text" class="materialize-textarea" onfocus="startWriting()"></textarea>
+                <textarea id="text" class="materialize-textarea" onfocus="startWriting()" oninput="inputChanged(this.value)"></textarea>
                 <label for="text">Write</label>
                 </div>
             </div>
